@@ -84,7 +84,7 @@ class LexoRank:
             middle_rank_part = previous_rank_part + to_add + offset
             offset = 0
 
-            if middle_rank_part > cls.base:
+            if middle_rank_part >= cls.base:
                 offset = 1
                 middle_rank_part -= cls.base
 
