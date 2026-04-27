@@ -31,6 +31,21 @@ INSTALLED_APPS = [
 ```
 
 
+### Tuning LexoRank
+
+Class attributes of `LexoRank` can be overridden via Django settings:
+
+```python
+# settings.py
+LEXORANK_DEFAULT_RANK_LENGTH = 6   # default: 6
+LEXORANK_REBALANCING_LENGTH = 20   # default: 128 (lower = rebalancing scheduled sooner)
+LEXORANK_MAX_RANK_LENGTH = 200     # default: 200 (hard cap before ValueError)
+```
+
+Settings that are not defined fall back to the class defaults. Values are applied
+once at app startup in `AppConfig.ready()`.
+
+
 ## Usage
 
 
