@@ -4,7 +4,7 @@ import pytest
 
 from django_lexorank.lexorank import LexoRank
 
-from .models import Board, Task, User
+from .models import Board, Card, CardStates, Task, User
 
 
 def test_placing_ranked_model_after_another_change_it_rank_respectively(board_factory):
@@ -321,3 +321,44 @@ def test_field_value_has_changed_method_foreign_key(task, board_factory):
 
     # then
     assert task.field_value_has_changed("board")
+
+
+# --- order_with_respect_to on a non-FK scalar field (CharField/TextChoices) ---
+
+
+def test_with_respect_to_value_returns_scalar_for_char_field(card):
+    # then — must NOT raise AttributeError("'CardStates' object has no attribute 'pk'")
+    assert card._with_respect_to_value == CardStates.TODO
+
+
+def test_save_does_not_raise_when_rebalancing_required_with_char_field_group(
+    card_factory,
+):
+    # given — saturate the TODO group so rebalancing_required() returns True
+    card_factory.create(state=CardStates.TODO, rank="d" * 30)
+
+    # when — saving any new card in the same state group must not raise
+    with mock.patch.object(LexoRank, "rebalancing_length", 20):
+        new_card = card_factory.create(state=CardStates.TODO)
+
+    # then — schedule_rebalancing was reached without AttributeError
+    assert new_card.pk is not None
+    assert new_card.rebalancing_scheduled()
+
+
+def test_rebalancing_scheduled_isolates_groups_for_char_field(
+    card_factory, scheduled_rebalancing_factory
+):
+    # given
+    todo_cards = card_factory.create_batch(3, state=CardStates.TODO)
+    doing_cards = card_factory.create_batch(3, state=CardStates.DOING)
+    scheduled_rebalancing_factory.create(
+        with_respect_to=str(CardStates.TODO),
+        model=Card._meta.model_name,
+    )
+
+    # then
+    for card in todo_cards:
+        assert card.rebalancing_scheduled()
+    for card in doing_cards:
+        assert not card.rebalancing_scheduled()

@@ -74,7 +74,10 @@ class RankedModel(models.Model):
     @property
     def _with_respect_to_value(self) -> str:
         if self.order_with_respect_to:
-            return getattr(self, self.order_with_respect_to).pk
+            value = getattr(self, self.order_with_respect_to)
+            # Support both FK (use .pk) and scalar fields like
+            # CharField/IntegerField/TextChoices (use the value itself).
+            return str(getattr(value, "pk", value))
 
         return ""
 

@@ -28,3 +28,24 @@ class Task(RankedModel):
     assigned_to = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="tasks"
     )
+
+
+class CardStates(models.TextChoices):
+    TODO = "TODO", "To do"
+    DOING = "DOING", "Doing"
+    DONE = "DONE", "Done"
+
+
+class Card(RankedModel):
+    """RankedModel grouped by a CharField (not a FK).
+
+    Reproduces the configuration where ``order_with_respect_to`` points at a
+    plain scalar field (e.g. TextChoices/state column) — verifies that the
+    library doesn't blindly call ``.pk`` on the value.
+    """
+
+    name = models.CharField(max_length=255)
+    state = models.CharField(
+        max_length=16, choices=CardStates.choices, default=CardStates.TODO
+    )
+    order_with_respect_to = "state"

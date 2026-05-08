@@ -2,6 +2,7 @@ import pytest
 
 from .factories import (
     BoardFactory,
+    CardFactory,
     ScheduledRebalancingFactory,
     TaskFactory,
     TeamFactory,
@@ -47,6 +48,16 @@ def task_factory():
 @pytest.fixture
 def task(task_factory):
     return task_factory()
+
+
+@pytest.fixture
+def card_factory():
+    return CardFactory
+
+
+@pytest.fixture
+def card(card_factory):
+    return card_factory()
 
 
 @pytest.fixture
